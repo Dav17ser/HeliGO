@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "HeliGo",
-    "slug": "HeliGo",
+    "name": "HeliGO",
+    "slug": "HeliGO",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
