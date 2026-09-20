@@ -34,7 +34,7 @@ const onboardingData = [
   },
 ];
 
-export function OnboardingScreen() {
+export function OnboardingScreen({ navigation }: any) {
   const [currentPage, setCurrentPage] = useState(0);
 
   const currentData = onboardingData[currentPage];
@@ -47,15 +47,12 @@ export function OnboardingScreen() {
   }, []);
 
   const handleNext = () => {
-    if (currentPage < onboardingData.length - 1) {
-      setCurrentPage(currentPage + 1);
-    } else {
-      Alert.alert(
-        'Bienvenido a HeliGO',
-        'Aquí comenzará el acceso a la aplicación.'
-      );
-    }
-  };
+  if (currentPage < onboardingData.length - 1) {
+    setCurrentPage(currentPage + 1);
+  } else {
+    navigation.navigate('Login');
+  }
+};
 
   const handleBack = () => {
     if (currentPage > 0) {
