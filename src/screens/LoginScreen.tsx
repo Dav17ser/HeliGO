@@ -17,12 +17,14 @@ export function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = () => {
   if (email === 'demo@heligo.com' && password === 'HeliGO123') {
+    setError('');
     navigation.navigate('Home');
   } else {
-    console.log('Correo o contraseña incorrectos');
+    setError('Correo o contraseña incorrectos');
   }
 };
 
@@ -106,6 +108,11 @@ export function LoginScreen({ navigation }: any) {
           <Pressable style={styles.loginButton} onPress={handleLogin}>
             <Text style={styles.loginButtonText}>Iniciar sesión</Text>
           </Pressable>
+          {error !== '' && (
+  <Text style={styles.errorText}>
+    {error}
+  </Text>
+)}
         </View>
 
         <View style={styles.registerContainer}>
@@ -262,6 +269,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+
+  errorText: {
+  color: '#FF6B6B',
+  fontSize: 14,
+  fontWeight: '600',
+  textAlign: 'center',
+  marginTop: 14,
+},
 
   registerContainer: {
     flexDirection: 'row',
