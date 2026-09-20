@@ -13,14 +13,18 @@ import {
 from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
-export function LoginScreen() {
+export function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = () => {
-    console.log('Intento de inicio de sesión:', email);
-  };
+  if (email === 'demo@heligo.com' && password === 'HeliGO123') {
+    navigation.navigate('Home');
+  } else {
+    console.log('Correo o contraseña incorrectos');
+  }
+};
 
   return (
     <ImageBackground

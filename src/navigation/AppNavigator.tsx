@@ -5,6 +5,7 @@ import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { ExampleScreen } from '../screens/ExampleScreen';
 import { AppStackParamList } from '../types/navigation';
 import { LoginScreen } from '../screens/LoginScreen';
+import { HomeScreen } from '../screens/HomeScreen';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
@@ -20,6 +21,11 @@ export function AppNavigator() {
         <Stack.Screen
         name="Login"
         component={LoginScreen}
+        />
+
+        <Stack.Screen
+        name="Home"
+        component={HomeScreen}
         />
 
         <Stack.Screen
