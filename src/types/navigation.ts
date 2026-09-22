@@ -1,3 +1,6 @@
 export type AppStackParamList = {
-    Example: undefined;
+  Onboarding: undefined;
+  Login: undefined;
+  Home: undefined;
+  Example: undefined;
 };
