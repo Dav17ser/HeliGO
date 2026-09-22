@@ -12,19 +12,33 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
-export function LoginScreen({ navigation }: any) {
+export function RegisterScreen({ navigation }: any) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
-    if (email === 'demo@heligo.com' && password === 'HeliGO123') {
-      setError('');
-      navigation.navigate('Home');
-    } else {
-      setError('Correo o contraseña incorrectos');
+  const handleRegister = () => {
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Completa todos los campos');
+      return;
     }
+
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
+
+    setError('');
+
+    // Por ahora el registro es solamente visual.
+    // Más adelante conectaremos el backend.
+    navigation.navigate('Login');
   };
 
   return (
@@ -44,21 +58,39 @@ export function LoginScreen({ navigation }: any) {
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View style={styles.formPanel}>
+
             <View style={styles.header}>
               <Text style={styles.logo}>HeliGO</Text>
 
               <Text style={styles.title}>
-                Bienvenido de nuevo
+                Crear cuenta
               </Text>
 
               <Text style={styles.subtitle}>
-                Inicia sesión para descubrir experiencias únicas desde el aire.
+                Regístrate y comienza a descubrir experiencias únicas desde el aire.
               </Text>
             </View>
 
             <View style={styles.form}>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>
+                  Nombre completo
+                </Text>
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Ingresa tu nombre"
+                  placeholderTextColor="#8A94A6"
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                />
+              </View>
+
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>
                   Correo electrónico
@@ -84,7 +116,7 @@ export function LoginScreen({ navigation }: any) {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
-                    placeholder="Ingresa tu contraseña"
+                    placeholder="Crea una contraseña"
                     placeholderTextColor="#8A94A6"
                     value={password}
                     onChangeText={setPassword}
@@ -104,41 +136,67 @@ export function LoginScreen({ navigation }: any) {
                 </View>
               </View>
 
-              <Pressable style={styles.forgotButton}>
-                <Text style={styles.forgotText}>
-                  ¿Olvidaste tu contraseña?
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>
+                  Confirmar contraseña
                 </Text>
-              </Pressable>
 
-              <Pressable
-                style={styles.loginButton}
-                onPress={handleLogin}
-              >
-                <Text style={styles.loginButtonText}>
-                  Iniciar sesión
-                </Text>
-              </Pressable>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Repite tu contraseña"
+                    placeholderTextColor="#8A94A6"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!showConfirmPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+
+                  <Pressable
+                    onPress={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }
+                    style={styles.showButton}
+                  >
+                    <Text style={styles.showText}>
+                      {showConfirmPassword ? 'Ocultar' : 'Mostrar'}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
 
               {error !== '' && (
                 <Text style={styles.errorText}>
                   {error}
                 </Text>
               )}
+
+              <Pressable
+                style={styles.registerButton}
+                onPress={handleRegister}
+              >
+                <Text style={styles.registerButtonText}>
+                  Crear cuenta
+                </Text>
+              </Pressable>
+
             </View>
 
-            <View style={styles.registerContainer}>
-              <Text style={styles.registerText}>
-                ¿No tienes una cuenta?
+            <View style={styles.loginContainer}>
+              <Text style={styles.loginText}>
+                ¿Ya tienes una cuenta?
               </Text>
 
               <Pressable
-                onPress={() => navigation.navigate('Register')}
+                onPress={() => navigation.navigate('Login')}
               >
-                <Text style={styles.registerLink}>
-                  {' '}Crear cuenta
+                <Text style={styles.loginLink}>
+                  {' '}Iniciar sesión
                 </Text>
               </Pressable>
             </View>
+
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -167,20 +225,20 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 70,
+    paddingTop: 50,
     paddingBottom: 30,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
 
   formPanel: {
-    backgroundColor: 'rgba(7, 26, 45, 0.78)',
+    backgroundColor: 'rgba(7, 26, 45, 0.82)',
     borderRadius: 24,
     padding: 24,
     width: '100%',
   },
 
   header: {
-    marginBottom: 40,
+    marginBottom: 30,
   },
 
   logo: {
@@ -188,19 +246,19 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#FFFFFF',
     letterSpacing: 1,
-    marginBottom: 50,
+    marginBottom: 30,
   },
 
   title: {
     fontSize: 30,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 12,
+    marginBottom: 10,
   },
 
   subtitle: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 22,
     color: '#FFFFFF',
   },
 
@@ -209,7 +267,7 @@ const styles = StyleSheet.create({
   },
 
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
 
   label: {
@@ -220,7 +278,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    height: 54,
+    height: 52,
     borderWidth: 1,
     borderColor: '#D9E0EA',
     borderRadius: 12,
@@ -231,7 +289,7 @@ const styles = StyleSheet.create({
   },
 
   passwordContainer: {
-    height: 54,
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -258,26 +316,16 @@ const styles = StyleSheet.create({
     color: '#1769AA',
   },
 
-  forgotButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 28,
-  },
-
-  forgotText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-
-  loginButton: {
+  registerButton: {
     height: 54,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 8,
   },
 
-  loginButtonText: {
+  registerButtonText: {
     color: '#071A2D',
     fontSize: 16,
     fontWeight: '700',
@@ -288,21 +336,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
-    marginTop: 14,
+    marginBottom: 12,
   },
 
-  registerContainer: {
+  loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 40,
+    marginTop: 28,
   },
 
-  registerText: {
+  loginText: {
     fontSize: 14,
     color: '#FFFFFF',
   },
 
-  registerLink: {
+  loginLink: {
     fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
