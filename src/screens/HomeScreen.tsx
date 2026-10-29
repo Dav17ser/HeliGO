@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { getTours, Tour } from '../services/api';
+import { ExperienceCard } from '../components/ExperienceCard';
 import {
   SafeAreaView,
   StyleSheet,
@@ -11,6 +13,41 @@ import {
 } from 'react-native';
 
 export function HomeScreen() {
+  const [tours, setTours] = useState<Tour[]>([]);
+const [loadingTours, setLoadingTours] = useState(true);
+const [tourError, setTourError] = useState<string | null>(null);
+
+useEffect(() => {
+  let active = true;
+
+  async function loadTours() {
+    try {
+      const data = await getTours();
+
+      if (active) {
+        setTours(data);
+        setTourError(null);
+      }
+    } catch (error) {
+      if (active) {
+        setTourError(
+          'No fue posible cargar las experiencias. Intenta nuevamente.'
+        );
+        console.error('Error cargando tours:', error);
+      }
+    } finally {
+      if (active) {
+        setLoadingTours(false);
+      }
+    }
+  }
+
+  loadTours();
+
+  return () => {
+    active = false;
+  };
+}, []);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -52,115 +89,44 @@ export function HomeScreen() {
           <Text style={styles.locationText}>
             Usar mi ubicación
           </Text>
-        </TouchableOpacity>
-
-        {/* EXPERIENCIAS CERCA DE TI */}
-        <View style={styles.experiencesSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              Experiencias cerca de ti
-            </Text>
-
-            <TouchableOpacity>
-              <Text style={styles.seeAll}>
-                Ver todas
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.cardsContainer}
-          >
-            {/* TARJETA MEDELLÍN */}
-            <View style={styles.experienceCard}>
-              <View style={styles.imageContainer}>
-                <Image
-                  source={require('../../assets/home/medellin.jpeg')}
-                  style={styles.cardImage}
-                />
-
-                <View style={styles.priceBadge}>
-                  <Text style={styles.priceText}>
-                    $350.000
-                  </Text>
-                </View>
-
-                <View style={styles.favoriteButton}>
-                  <Text style={styles.favoriteIcon}>
-                    ♡
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.cardContent}>
-                <Text
-                  style={styles.cardTitle}
-                  numberOfLines={1}
-                >
-                  Heli Tours Medellín
-                </Text>
-
-                <Text style={styles.cardLocation}>
-                  📍 Medellín
-                </Text>
-
-                <Text style={styles.cardRating}>
-                  ★★★★★  4.8  ·  20 min
-                </Text>
-
-                <Text style={styles.cardDistance}>
-                  2.4 km
-                </Text>
-              </View>
-            </View>
-
-            {/* TARJETA CARTAGENA */}
-            <View style={styles.experienceCard}>
-              <View style={styles.imageContainer}>
-                <Image
-                  source={require('../../assets/home/cartagena.jpeg')}
-                  style={styles.cardImage}
-                />
-
-                <View style={styles.priceBadge}>
-                  <Text style={styles.priceText}>
-                    $480.000
-                  </Text>
-                </View>
-
-                <View style={styles.favoriteButton}>
-                  <Text style={styles.favoriteIcon}>
-                    ♡
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.cardContent}>
-                <Text
-                  style={styles.cardTitle}
-                  numberOfLines={1}
-                >
-                  Sky View Cartagena
-                </Text>
-
-                <Text style={styles.cardLocation}>
-                  📍 Cartagena
-                </Text>
-
-                <Text style={styles.cardRating}>
-                  ★★★★★  4.9  ·  25 min
-                </Text>
-
-                <Text style={styles.cardDistance}>
-                  5.1 km
-                </Text>
-              </View>
-            </View>
-          </ScrollView>
-        </View>
-
+        </TouchableOpacity>      
+ {/* EXPERIENCIAS CERCA DE TI */}
+<View style={styles.experiencesSection}>
+  <View style={styles.sectionHeader}>
+    <Text style={styles.sectionTitle}>
+      Experiencias cerca de ti
+    </Text>
+    <TouchableOpacity>
+      <Text style={styles.seeAll}>Ver todas</Text>
+    </TouchableOpacity>
+  </View>
+  {loadingTours ? (
+    <Text style={styles.cardDistance}>
+      Cargando experiencias...
+    </Text>
+  ) : tourError ? (
+    <Text style={styles.cardDistance}>
+      {tourError}
+    </Text>
+  ) : tours.length === 0 ? (
+    <Text style={styles.cardDistance}>
+      Próximamente encontrarás nuevas experiencias.
+    </Text>
+  ) : (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.cardsContainer}
+    >
+      {tours.map((tour) => (
+        <ExperienceCard
+          key={tour.id}
+          tour={tour}
+        />
+      ))}
+    </ScrollView>
+  )}
+</View>
         {/* BANNER PRINCIPAL */}
         <View style={styles.banner}>
           <Image

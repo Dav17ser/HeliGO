@@ -5,7 +5,7 @@ export function ExampleScreen() {
   const handleButtonPress = () => {
     Alert.alert(
       'Aun no has seleccionado el vuelo',
-      'Por favor, selecciona un vuelo antes de continuar, pdta profe tengo sueño.',
+      'Por favor, selecciona un vuelo antes de continuar.',
       [
         {
           text: 'Cerrar',

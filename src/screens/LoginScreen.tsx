@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { loginUser } from '../services/auth';
 import {
   StyleSheet,
   Text,
@@ -17,15 +18,47 @@ export function LoginScreen({ navigation }: any) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (email === 'demo@heligo.com' && password === 'HeliGO123') {
-      setError('');
-      navigation.navigate('Home');
-    } else {
-      setError('Correo o contraseña incorrectos');
+const handleLogin = async () => {
+  if (loading) return;
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (!normalizedEmail || !password) {
+    setError('Ingresa tu correo y contraseña.');
+    return;
+  }
+
+  setLoading(true);
+  setError('');
+
+  try {
+    const result = await loginUser({
+      email: normalizedEmail,
+      password,
+    });
+
+    if (!result.accessToken) {
+      setError('No se recibió una sesión válida.');
+      return;
     }
-  };
+
+    navigation.navigate('Home', {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    });
+  } catch (error) {
+    setError(
+      error instanceof Error
+        ? error.message
+        : 'No fue posible iniciar sesión. Intenta nuevamente.'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <ImageBackground
@@ -108,16 +141,24 @@ export function LoginScreen({ navigation }: any) {
                 <Text style={styles.forgotText}>
                   ¿Olvidaste tu contraseña?
                 </Text>
-              </Pressable>
+              </Pressable>              
+<Pressable
+  style={[
+    styles.loginButton,
+    loading && { opacity: 0.7 },
+  ]}
+  onPress={handleLogin}
+  disabled={loading}>
+  <Text style={styles.loginButtonText}>
+    {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+  </Text>
+</Pressable>
 
-              <Pressable
-                style={styles.loginButton}
-                onPress={handleLogin}
-              >
-                <Text style={styles.loginButtonText}>
-                  Iniciar sesión
-                </Text>
-              </Pressable>
+{error !== '' && (
+  <Text style={styles.errorText}>
+    {error}
+  </Text>
+)}
 
               {error !== '' && (
                 <Text style={styles.errorText}>
