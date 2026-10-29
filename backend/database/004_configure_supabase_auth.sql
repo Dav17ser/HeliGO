@@ -1,0 +1,15 @@
+-- HeliGO
+-- Archivo de referencia para la configuración de Supabase Auth.
+--
+-- La autenticación de usuarios se administra mediante Supabase Auth.
+-- No crear una tabla public.users para duplicar las credenciales.
+--
+-- Configuración pendiente de realizar o verificar en Supabase Dashboard:
+--
+-- 1. Authentication > Providers: habilitar Email.
+-- 2. Definir la política de confirmación de correo según el entorno.
+-- 3. Configurar las URLs permitidas si se utiliza confirmación por correo.
+-- 4. Utilizar la clave pública/publishable en el frontend.
+-- 5. Nunca exponer la clave service_role en la aplicación móvil.
+--
+-- Este archivo es documental: no ejecuta cambios de configuración.

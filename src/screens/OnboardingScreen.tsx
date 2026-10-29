@@ -42,7 +42,11 @@ export function OnboardingScreen({ navigation }: any) {
   // Precargar las imágenes del onboarding
   useEffect(() => {
     onboardingData.forEach((item) => {
-      Image.prefetch(Image.resolveAssetSource(item.image).uri);
+      const imageSource = Image.resolveAssetSource(item.image);
+
+if (imageSource?.uri) {
+  Image.prefetch(imageSource.uri);
+}
     });
   }, []);
 
