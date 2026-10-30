@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://172.26.13.40:3000/heligo';
+export const API_BASE_URL = 'http://172.20.10.6:3000/heligo';
 export interface AuthUser {
   id: string;
   email: string;
