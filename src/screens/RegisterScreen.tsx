@@ -9,8 +9,10 @@ import {
   Platform,
   ScrollView,
   ImageBackground,
+  Alert,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { registerUser } from '../services/auth';
 
 export function RegisterScreen({ navigation }: any) {
   const [name, setName] = useState('');
@@ -22,25 +24,48 @@ export function RegisterScreen({ navigation }: any) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+const handleRegister = async () => {
+  if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+    setError('Completa todos los campos');
+    return;
+  }
 
-  const handleRegister = () => {
-    if (!name || !email || !password || !confirmPassword) {
-      setError('Completa todos los campos');
-      return;
-    }
+  if (password !== confirmPassword) {
+    setError('Las contraseñas no coinciden');
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
+  if (password.length < 6) {
+    setError('La contraseña debe tener al menos 6 caracteres');
+    return;
+  }
 
+  try {
     setError('');
+    setLoading(true);
 
-    // Por ahora el registro es solamente visual.
-    // Más adelante conectaremos el backend.
-    navigation.navigate('Login');
-  };
+    const response = await registerUser({
+      fullName: name.trim(),
+      email: email.trim().toLowerCase(),
+      password,
+    });
 
+    Alert.alert(
+      '¡Registro exitoso!',
+      response.requiresEmailConfirmation
+        ? 'Tu cuenta fue creada. Revisa tu correo electrónico para confirmarla.'
+        : 'Tu cuenta ha sido creada correctamente.',
+      [{ text: 'Continuar', onPress: () => navigation.navigate('Login') }]
+    );
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : 'No fue posible crear la cuenta.'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <ImageBackground
       source={require('../../assets/login/login-background.jpeg')}
