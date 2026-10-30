@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Image,
@@ -11,11 +12,15 @@ import { Tour } from '../services/api';
 type ExperienceCardProps = {
   tour: Tour;
   onPress?: (tour: Tour) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (tour: Tour) => void;
 };
 
 export function ExperienceCard({
   tour,
   onPress,
+  isFavorite = false,
+  onToggleFavorite,
 }: ExperienceCardProps) {
   const formattedPrice = new Intl.NumberFormat('es-CO', {
     style: 'currency',
@@ -24,47 +29,59 @@ export function ExperienceCard({
   }).format(Number(tour.price));
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      style={styles.card}
-      onPress={() => onPress?.(tour)}
-    >
-      <View style={styles.imageContainer}>
-        {tour.imageUrl ? (
-          <Image
-            source={{ uri: tour.imageUrl }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <Text style={styles.placeholderText}>HELiGO</Text>
+    <View style={styles.card}>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => onPress?.(tour)}
+      >
+        <View style={styles.imageContainer}>
+          {tour.imageUrl ? (
+            <Image
+              source={{ uri: tour.imageUrl }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.placeholderText}>HELiGO</Text>
+            </View>
+          )}
+
+          <View style={styles.priceBadge}>
+            <Text style={styles.priceText}>{formattedPrice}</Text>
           </View>
-        )}
-
-        <View style={styles.priceBadge}>
-          <Text style={styles.priceText}>{formattedPrice}</Text>
         </View>
 
-        <View style={styles.favoriteButton}>
-          <Text style={styles.favoriteIcon}>♡</Text>
+        <View style={styles.content}>
+          <Text style={styles.title} numberOfLines={1}>
+            {tour.name}
+          </Text>
+          <Text style={styles.location} numberOfLines={1}>
+            📍 {tour.city}
+          </Text>
+          <Text style={styles.duration}>
+            ⏱ {tour.durationMinutes} min
+          </Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={1}>
-          {tour.name}
+      <TouchableOpacity
+        style={styles.favoriteButton}
+        onPress={() => onToggleFavorite?.(tour)}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={
+          isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'
+        }
+      >
+        <Text style={[
+          styles.favoriteIcon,
+          isFavorite && styles.favoriteActive,
+        ]}>
+          {isFavorite ? '♥' : '♡'}
         </Text>
-
-        <Text style={styles.location} numberOfLines={1}>
-          📍 {tour.city}
-        </Text>
-
-        <Text style={styles.duration}>
-          ⏱ {tour.durationMinutes} min
-        </Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -120,16 +137,20 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 3,
   },
   favoriteIcon: {
-    fontSize: 20,
+    fontSize: 21,
     color: '#7898B4',
+  },
+  favoriteActive: {
+    color: '#E53955',
   },
   content: {
     padding: 10,

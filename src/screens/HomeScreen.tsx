@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { getTours, Tour } from '../services/api';
 import { ExperienceCard } from '../components/ExperienceCard';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AppStackParamList } from '../types/navigation';
 import {
   SafeAreaView,
   StyleSheet,
@@ -12,42 +15,60 @@ import {
   Image,
 } from 'react-native';
 
+type HomeNavigationProp = NativeStackNavigationProp<
+  AppStackParamList,
+  'Home'
+>;
+
 export function HomeScreen() {
+  const navigation = useNavigation<HomeNavigationProp>();
   const [tours, setTours] = useState<Tour[]>([]);
-const [loadingTours, setLoadingTours] = useState(true);
-const [tourError, setTourError] = useState<string | null>(null);
+  const [loadingTours, setLoadingTours] = useState(true);
+  const [tourError, setTourError] = useState<string | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
 
-useEffect(() => {
-  let active = true;
+  const toggleFavorite = (tour: Tour) => {
+    setFavoriteIds((current) =>
+      current.includes(tour.id)
+        ? current.filter((id) => id !== tour.id)
+        : [...current, tour.id]
+    );
+  };
 
-  async function loadTours() {
-    try {
-      const data = await getTours();
+  const openExperience = (tour: Tour) => {
+    navigation.navigate('ExperienceDetail', {
+      tourId: tour.id,
+    });
+  };
 
-      if (active) {
-        setTours(data);
-        setTourError(null);
-      }
-    } catch (error) {
-      if (active) {
-        setTourError(
-          'No fue posible cargar las experiencias. Intenta nuevamente.'
-        );
-        console.error('Error cargando tours:', error);
-      }
-    } finally {
-      if (active) {
-        setLoadingTours(false);
+  useEffect(() => {
+    let active = true;
+
+    async function loadTours() {
+      try {
+        const data = await getTours();
+        if (active) {
+          setTours(data);
+          setTourError(null);
+        }
+      } catch (error) {
+        if (active) {
+          setTourError(
+            'No fue posible cargar las experiencias. Intenta nuevamente.'
+          );
+          console.error('Error cargando tours:', error);
+        }
+      } finally {
+        if (active) setLoadingTours(false);
       }
     }
-  }
 
-  loadTours();
+    loadTours();
 
-  return () => {
-    active = false;
-  };
-}, []);
+    return () => {
+      active = false;
+    };
+  }, []);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -120,9 +141,12 @@ useEffect(() => {
     >
       {tours.map((tour) => (
         <ExperienceCard
-          key={tour.id}
-          tour={tour}
-        />
+  key={tour.id}
+  tour={tour}
+  onPress={openExperience}
+  isFavorite={favoriteIds.includes(tour.id)}
+  onToggleFavorite={toggleFavorite}
+/>
       ))}
     </ScrollView>
   )}

@@ -7,6 +7,7 @@ import { ExampleScreen } from '../screens/ExampleScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
+import { ExperienceDetailScreen } from '../screens/ExperienceDetailScreen';
 
 import { AppStackParamList } from '../types/navigation';
 
@@ -36,6 +37,10 @@ export function AppNavigator() {
           name="Home"
           component={HomeScreen}
         />
+        <Stack.Screen
+  name="ExperienceDetail"
+  component={ExperienceDetailScreen}
+/>
 
         <Stack.Screen
           name="Example"
