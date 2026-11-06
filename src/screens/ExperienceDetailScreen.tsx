@@ -7,11 +7,13 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Linking,
+  Alert,
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../types/navigation';
-import { getTourById, Tour } from '../services/api';
+import { getTourById, getOperatorById, getLocationsByOperatorId, getTours, Operator, ServiceLocation, Tour } from '../services/api';
 
 type DetailRoute = RouteProp<AppStackParamList, 'ExperienceDetail'>;
 
@@ -21,28 +23,70 @@ export function ExperienceDetailScreen() {
     useNavigation<NativeStackNavigationProp<AppStackParamList>>();
 
   const [tour, setTour] = useState<Tour | null>(null);
+  const [operator, setOperator] = useState<Operator | null>(null);
+  const [locations, setLocations] = useState<ServiceLocation[]>([]);
+  const [relatedTours, setRelatedTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    let active = true;
+  let active = true;
 
-    getTourById(route.params.tourId)
-      .then((data) => {
-        if (active) setTour(data);
-      })
-      .catch((err) => {
-        console.error('Error cargando detalle:', err);
-        if (active) setError(true);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+  const loadExperienceDetails = async () => {
+    try {
+      setLoading(true);
+      setError(false);
 
-    return () => {
-      active = false;
-    };
-  }, [route.params.tourId]);
+      const tourData = await getTourById(route.params.tourId);
+
+      if (!active) return;
+
+      setTour(tourData);
+
+      const [operatorResult, locationsResult, toursResult] =
+        await Promise.allSettled([
+          getOperatorById(tourData.operatorId),
+          getLocationsByOperatorId(tourData.operatorId),
+          getTours(),
+        ]);
+
+      if (!active) return;
+
+      if (operatorResult.status === 'fulfilled') {
+        setOperator(operatorResult.value);
+      }
+
+      if (locationsResult.status === 'fulfilled') {
+        setLocations(locationsResult.value);
+      }
+
+      if (toursResult.status === 'fulfilled') {
+        setRelatedTours(
+          toursResult.value.filter(
+            (item) =>
+              item.operatorId === tourData.operatorId &&
+              item.id !== tourData.id
+          )
+        );
+      }
+    } catch (err) {
+      console.error('Error cargando la experiencia:', err);
+      if (active) {
+        setError(true);
+      }
+    } finally {
+      if (active) {
+        setLoading(false);
+      }
+    }
+  };
+
+  loadExperienceDetails();
+
+  return () => {
+    active = false;
+  };
+}, [route.params.tourId]);
 
   const price = tour
     ? new Intl.NumberFormat('es-CO', {
@@ -76,46 +120,200 @@ export function ExperienceDetailScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <View>
-        {tour.imageUrl ? (
-          <Image source={{ uri: tour.imageUrl }} style={styles.image} />
-        ) : (
-          <View style={styles.placeholder}>
-            <Text style={styles.logo}>HELiGO</Text>
-          </View>
-        )}
-
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>‹ Volver</Text>
-        </TouchableOpacity>
+  {/* Imagen principal */}
+  <View>
+    {tour.imageUrl ? (
+      <Image source={{ uri: tour.imageUrl }} style={styles.image} />
+    ) : (
+      <View style={styles.placeholder}>
+        <Text style={styles.logo}>HELiGO</Text>
       </View>
+    )}
 
-      <View style={styles.content}>
-        <Text style={styles.city}>{tour.city}, {tour.country}</Text>
-        <Text style={styles.title}>{tour.name}</Text>
+    <TouchableOpacity
+      style={styles.backButton}
+      onPress={() => navigation.goBack()}
+    >
+      <Text style={styles.backButtonText}>‹ Volver</Text>
+    </TouchableOpacity>
+  </View>
 
-        <Text style={styles.price}>{price}</Text>
+  {/* Información principal */}
+  <View style={styles.content}>
+    <Text style={styles.city}>
+      {tour.city}, {tour.country}
+    </Text>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.info}>⏱ {tour.durationMinutes} minutos</Text>
-          <Text style={styles.info}>🚁 Experiencia aérea</Text>
+    <Text style={styles.title}>{tour.name}</Text>
+
+    <Text style={styles.price}>{price}</Text>
+
+    <View style={styles.infoRow}>
+      <Text style={styles.info}>
+        ⏱ {tour.durationMinutes} minutos
+      </Text>
+      <Text style={styles.info}>🚁 Experiencia aérea</Text>
+    </View>
+
+    <View style={styles.divider} />
+
+    {/* Descripción */}
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Sobre esta experiencia</Text>
+      <Text style={styles.description}>
+        {tour.description ||
+          'Próximamente encontrarás más información sobre esta experiencia.'}
+      </Text>
+    </View>
+
+    {/* Operador */}
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Operado por</Text>
+
+      {operator ? (
+        <View style={styles.infoCard}>
+          <Text style={styles.cardTitle}>{operator.name}</Text>
+
+          <Text style={styles.cardSubtitle}>
+            {operator.city}, {operator.country}
+          </Text>
+
+          {operator.description && (
+            <Text style={styles.description}>
+              {operator.description}
+            </Text>
+          )}
+
+          {operator.contactEmail && (
+            <Text style={styles.cardDetail}>
+              Correo: {operator.contactEmail}
+            </Text>
+          )}
+
+          {operator.contactPhone && (
+            <Text style={styles.cardDetail}>
+              Teléfono: {operator.contactPhone}
+            </Text>
+          )}
         </View>
-
-        <View style={styles.divider} />
-
-        <Text style={styles.sectionTitle}>Sobre esta experiencia</Text>
-        <Text style={styles.description}>
-          {tour.description || 'Próximamente encontrarás más información sobre esta experiencia.'}
+      ) : (
+        <Text style={styles.emptyText}>
+          Información del operador no disponible.
         </Text>
+      )}
+    </View>
 
-        <TouchableOpacity style={styles.contactButton}>
-          <Text style={styles.contactText}>Consultar disponibilidad</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+    {/* Ubicaciones del operador */}
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>
+        Ubicaciones de operación
+      </Text>
+
+      {locations.length > 0 ? (
+        locations.map((location) => (
+          <View key={location.id} style={styles.infoCard}>
+            <Text style={styles.cardTitle}>{location.name}</Text>
+
+            <Text style={styles.cardSubtitle}>
+              {location.city}, {location.country}
+            </Text>
+
+            {location.address && (
+              <Text style={styles.cardDetail}>
+                Dirección: {location.address}
+              </Text>
+            )}
+            
+         <TouchableOpacity
+  style={styles.locationButton}
+  onPress={() =>
+    Linking.openURL(
+      `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`
+    ).catch(() =>
+      Alert.alert('Error', 'No fue posible abrir Google Maps.')
+    )
+  }
+>
+  <Text style={styles.locationButtonText}>
+    Ver ubicación en Google Maps
+  </Text>
+</TouchableOpacity>   
+          </View>
+        ))
+      ) : (
+        <Text style={styles.emptyText}>
+          No hay ubicaciones disponibles.
+        </Text>
+      )}
+    </View>
+
+    {/* Otras experiencias */}
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>
+        Más experiencias de este operador
+      </Text>
+
+      {relatedTours.length > 0 ? (
+        relatedTours.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            style={styles.infoCard}
+            onPress={() =>
+              navigation.push('ExperienceDetail', {
+                tourId: item.id,
+              })
+            }
+          >
+            <Text style={styles.cardTitle}>{item.name}</Text>
+
+            <Text style={styles.cardSubtitle}>
+              {item.city}, {item.country}
+            </Text>
+
+            <Text style={styles.cardDetail}>
+              {item.durationMinutes} minutos · {item.currency} {item.price}
+            </Text>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <Text style={styles.emptyText}>
+          No hay otras experiencias disponibles.
+        </Text>
+      )}
+    </View>
+
+    {/* Botón de contacto */}
+    <TouchableOpacity
+  style={styles.contactButton}
+  onPress={() => {
+    if (operator?.contactEmail) {
+      const subject = encodeURIComponent(
+        `Consulta de disponibilidad: ${tour.name}`
+      );
+
+      Linking.openURL(
+        `mailto:${operator.contactEmail}?subject=${subject}`
+      ).catch(() => {
+        Alert.alert('Error', 'No fue posible abrir el correo electrónico.');
+      });
+    } else if (operator?.contactPhone) {
+      Linking.openURL(`tel:${operator.contactPhone}`).catch(() => {
+        Alert.alert('Error', 'No fue posible iniciar la llamada.');
+      });
+    } else {
+      Alert.alert(
+        'Contacto no disponible',
+        'Este operador todavía no tiene información de contacto registrada.'
+      );
+    }
+  }}
+>
+  <Text style={styles.contactText}>
+    Consultar disponibilidad
+  </Text>
+</TouchableOpacity>
+  </View>
+</ScrollView>
   );
 }
 
@@ -183,4 +381,54 @@ const styles = StyleSheet.create({
   },
   contactText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
   backText: { color: '#173B68', marginTop: 15, fontWeight: '700' },
+section: {
+  marginBottom: 24,
+},
+
+infoCard: {
+  backgroundColor: '#FFFFFF',
+  padding: 16,
+  borderRadius: 14,
+  marginTop: 10,
+  borderWidth: 1,
+  borderColor: '#EAEAEA',
+},
+
+cardTitle: {
+  fontSize: 16,
+  fontWeight: '700',
+  color: '#172B4D',
+},
+
+cardSubtitle: {
+  fontSize: 13,
+  color: '#777777',
+  marginTop: 4,
+},
+
+cardDetail: {
+  fontSize: 13,
+  color: '#444444',
+  marginTop: 8,
+},
+
+emptyText: {
+  fontSize: 13,
+  color: '#888888',
+  marginTop: 8,
+},
+locationButton: {
+  marginTop: 12,
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  borderRadius: 10,
+  backgroundColor: '#EEF3F8',
+  alignSelf: 'flex-start',
+},
+
+locationButtonText: {
+  color: '#172B4D',
+  fontSize: 13,
+  fontWeight: '600',
+},
 });
