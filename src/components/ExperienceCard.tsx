@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Image,
@@ -35,7 +34,7 @@ export function ExperienceCard({
         onPress={() => onPress?.(tour)}
       >
         <View style={styles.imageContainer}>
-          {tour.imageUrl ? (
+           {tour.imageUrl ? (
             <Image
               source={{ uri: tour.imageUrl }}
               style={styles.image}
@@ -44,6 +43,16 @@ export function ExperienceCard({
           ) : (
             <View style={styles.imagePlaceholder}>
               <Text style={styles.placeholderText}>HELiGO</Text>
+            </View>
+          )}
+
+          {tour.operatorLogoUrl && (
+            <View style={styles.operatorLogoContainer}>
+              <Image
+                source={{ uri: tour.operatorLogoUrl }}
+                style={styles.operatorLogo}
+                resizeMode="contain"
+              />
             </View>
           )}
 
@@ -169,5 +178,22 @@ const styles = StyleSheet.create({
   duration: {
     fontSize: 10,
     color: '#D1A12A',
+  },
+  operatorLogoContainer: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    padding: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+  },
+  operatorLogo: {
+    width: '100%',
+    height: '100%',
   },
 });

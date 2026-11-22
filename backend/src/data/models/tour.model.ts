@@ -8,6 +8,7 @@ export interface Tour {
   currency: string;
   durationMinutes: number;
   imageUrl: string | null;
+  operatorLogoUrl: string | null;
   city: string;
   country: string;
 }

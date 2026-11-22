@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -8,6 +9,7 @@ import { LoginScreen } from '../screens/LoginScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
 import { ExperienceDetailScreen } from '../screens/ExperienceDetailScreen';
+import { DestinationDetailScreen } from '../screens/DestinationDetailScreen';
 
 import { AppStackParamList } from '../types/navigation';
 
@@ -17,36 +19,22 @@ export function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
 
         <Stack.Screen
-          name="Onboarding"
-          component={OnboardingScreen}
+          name="DestinationDetail"
+          component={DestinationDetailScreen}
         />
 
         <Stack.Screen
-          name="Login"
-          component={LoginScreen}
+          name="ExperienceDetail"
+          component={ExperienceDetailScreen}
         />
 
-        <Stack.Screen
-          name="Register"
-          component={RegisterScreen}
-        />
-
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-        />
-        <Stack.Screen
-  name="ExperienceDetail"
-  component={ExperienceDetailScreen}
-/>
-
-        <Stack.Screen
-          name="Example"
-          component={ExampleScreen}
-        />
-
+        <Stack.Screen name="Example" component={ExampleScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

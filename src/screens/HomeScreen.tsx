@@ -4,6 +4,7 @@ import { ExperienceCard } from '../components/ExperienceCard';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../types/navigation';
+import { DESTINATIONS, type Destination } from '../constants/destinations';
 import {
   SafeAreaView,
   StyleSheet,
@@ -40,6 +41,12 @@ export function HomeScreen() {
       tourId: tour.id,
     });
   };
+const openDestination = (destination: Destination) => {
+  navigation.navigate('DestinationDetail', {
+    city: destination.city,
+    country: destination.country,
+  });
+};
 
   useEffect(() => {
     let active = true;
@@ -192,30 +199,29 @@ export function HomeScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+<ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={styles.destinationRow}
+>
+  {DESTINATIONS.map((destination) => (
+    <TouchableOpacity
+      key={destination.id}
+      style={styles.destinationItem}
+      onPress={() => openDestination(destination)}
+      activeOpacity={0.8}
+    >
+      <Image
+        source={destination.image}
+        style={styles.destinationImage}
+      />
 
-          <View style={styles.destinationRow}>
-            <View style={styles.destinationItem}>
-              <Image
-                source={require('../../assets/home/medellin.jpeg')}
-                style={styles.destinationImage}
-              />
-
-              <Text style={styles.destinationText}>
-                Medellín
-              </Text>
-            </View>
-
-            <View style={styles.destinationItem}>
-              <Image
-                source={require('../../assets/home/cartagena.jpeg')}
-                style={styles.destinationImage}
-              />
-
-              <Text style={styles.destinationText}>
-                Cartagena
-              </Text>
-            </View>
-          </View>
+      <Text style={styles.destinationText}>
+        {destination.city}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</ScrollView>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -504,16 +510,13 @@ const styles = StyleSheet.create({
   },
 
   destinationRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
+  gap: 12,
+  paddingRight: 20,
+},
 
   destinationItem: {
-    flex: 1,
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: '#F4F7FB',
-  },
+  width: 155,
+},
 
   destinationImage: {
     width: '100%',

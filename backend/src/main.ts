@@ -1,8 +1,7 @@
-import { createServer } from "./server";
+import app from "./server";
 import { env } from "./config/env";
 
 async function bootstrap() {
-  const app = createServer();
   const port = env.port;
 
   app.listen(port, () => {

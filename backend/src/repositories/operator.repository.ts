@@ -7,6 +7,7 @@ export class OperatorRepository {
       SELECT
         id,
         name,
+        logo_url AS "logoUrl",
         country,
         city,
         description,
@@ -26,6 +27,7 @@ export class OperatorRepository {
         SELECT
           id,
           name,
+          logo_url AS "logoUrl",
           country,
           city,
           description,
