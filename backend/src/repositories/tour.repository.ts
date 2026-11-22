@@ -14,6 +14,7 @@ export class TourRepository {
         t.currency,
         t.duration_minutes AS "durationMinutes",
         t.image_url AS "imageUrl",
+        o.logo_url AS "operatorLogoUrl",
         sl.city,
         sl.country
       FROM public.tours t

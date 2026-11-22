@@ -7,4 +7,8 @@ export type AppStackParamList = {
   ExperienceDetail: {
     tourId: number;
   };
+  DestinationDetail: {
+  city: string;
+  country: string;
 };
+}
