@@ -53,6 +53,12 @@ export function registerUser(input: RegisterInput): Promise<AuthResponse> {
   return postAuth<AuthResponse>('register', input);
 }
 
+export function requestPasswordReset(
+  email: string
+): Promise<{ message: string }> {
+  return postAuth<{ message: string }>('forgot-password', { email });
+}
+
 export function loginUser(input: LoginInput): Promise<AuthResponse> {
   return postAuth<AuthResponse>('login', input);
 }

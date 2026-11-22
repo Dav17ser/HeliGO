@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { loginUser } from '../services/auth';
+import { loginUser, requestPasswordReset } from '../services/auth';
 import {
   StyleSheet,
   Text,
@@ -19,6 +19,43 @@ export function LoginScreen({ navigation }: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const toggleRecoveryMode = () => {
+    setRecoveryMode((current) => !current);
+    setError('');
+    setSuccessMessage('');
+  };
+
+  const handlePasswordRecovery = async () => {
+    if (loading) return;
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError('Ingresa un correo electrónico válido.');
+      setSuccessMessage('');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      const result = await requestPasswordReset(normalizedEmail);
+      setSuccessMessage(result.message);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No fue posible procesar la solicitud. Intenta nuevamente.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
 const handleLogin = async () => {
   if (loading) return;
@@ -83,11 +120,13 @@ const handleLogin = async () => {
               <Text style={styles.logo}>HeliGO</Text>
 
               <Text style={styles.title}>
-                Bienvenido de nuevo
+                {recoveryMode ? 'Recupera tu contraseña' : 'Bienvenido de nuevo'}
               </Text>
 
               <Text style={styles.subtitle}>
-                Inicia sesión para descubrir experiencias únicas desde el aire.
+                {recoveryMode
+                  ? 'Ingresa el correo asociado a tu cuenta y te enviaremos instrucciones para restablecerla.'
+                  : 'Inicia sesión para descubrir experiencias únicas desde el aire.'}
               </Text>
             </View>
 
@@ -109,6 +148,7 @@ const handleLogin = async () => {
                 />
               </View>
 
+              {!recoveryMode && (
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>
                   Contraseña
@@ -136,21 +176,29 @@ const handleLogin = async () => {
                   </Pressable>
                 </View>
               </View>
+              )}
 
-              <Pressable style={styles.forgotButton}>
+              <Pressable
+                style={styles.forgotButton}
+                onPress={toggleRecoveryMode}
+              >
                 <Text style={styles.forgotText}>
-                  ¿Olvidaste tu contraseña?
+                  {recoveryMode
+                    ? 'Volver a iniciar sesión'
+                    : '¿Olvidaste tu contraseña?'}
                 </Text>
-              </Pressable>              
+              </Pressable>
 <Pressable
   style={[
     styles.loginButton,
     loading && { opacity: 0.7 },
   ]}
-  onPress={handleLogin}
+  onPress={recoveryMode ? handlePasswordRecovery : handleLogin}
   disabled={loading}>
   <Text style={styles.loginButtonText}>
-    {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+    {recoveryMode
+      ? loading ? 'Enviando...' : 'Enviar instrucciones'
+      : loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
   </Text>
 </Pressable>
 
@@ -160,11 +208,11 @@ const handleLogin = async () => {
   </Text>
 )}
 
-              {error !== '' && (
-                <Text style={styles.errorText}>
-                  {error}
-                </Text>
-              )}
+{successMessage !== '' && (
+  <Text style={styles.successText}>
+    {successMessage}
+  </Text>
+)}
             </View>
 
             <View style={styles.registerContainer}>
@@ -326,6 +374,14 @@ const styles = StyleSheet.create({
 
   errorText: {
     color: '#FF6B6B',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 14,
+  },
+
+  successText: {
+    color: '#7BE0A4',
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',

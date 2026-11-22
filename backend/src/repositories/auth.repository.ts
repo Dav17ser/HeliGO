@@ -47,6 +47,15 @@ export class AuthRepository {
     };
   }
 
+  async requestPasswordReset(email: string): Promise<void> {
+    const { error } =
+      await supabaseAuth.auth.resetPasswordForEmail(email);
+
+    if (error) {
+      throw new Error("RECUPERACION_NO_DISPONIBLE");
+    }
+  }
+
   async login(
     email: string,
     password: string
