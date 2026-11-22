@@ -7,5 +7,6 @@ const api = makeInvoker(AuthController);
 
 router.post("/register", api("register"));
 router.post("/login", api("login"));
+router.post("/forgot-password", api("forgotPassword"));
 
 export default router;

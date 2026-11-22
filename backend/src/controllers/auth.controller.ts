@@ -59,6 +59,47 @@ export class AuthController {
     }
   }
 
+  async forgotPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { email } = req.body ?? {};
+
+    if (typeof email !== "string") {
+      res.status(400).json({ message: "El correo es obligatorio" });
+      return;
+    }
+
+    try {
+      await this.authService.requestPasswordReset(email);
+
+      // Respuesta genérica: no revela si el correo está registrado.
+      res.status(200).json({
+        message:
+          "Si el correo está registrado, recibirás instrucciones para restablecer tu contraseña.",
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        const messages: Record<string, [number, string]> = {
+          DATOS_INVALIDOS: [400, "Ingresa un correo electrónico válido"],
+          RECUPERACION_NO_DISPONIBLE: [
+            503,
+            "No fue posible procesar la solicitud. Intenta más tarde.",
+          ],
+        };
+
+        const mapped = messages[error.message];
+        if (mapped) {
+          res.status(mapped[0]).json({ message: mapped[1] });
+          return;
+        }
+      }
+
+      next(error);
+    }
+  }
+
   async login(
     req: Request,
     res: Response,

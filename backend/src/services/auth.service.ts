@@ -36,6 +36,16 @@ export class AuthService {
     );
   }
 
+  async requestPasswordReset(email: string): Promise<void> {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      throw new Error("DATOS_INVALIDOS");
+    }
+
+    await this.authRepository.requestPasswordReset(normalizedEmail);
+  }
+
   async login(
     email: string,
     password: string
