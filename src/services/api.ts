@@ -1,4 +1,7 @@
-const API_BASE_URL = 'http://172.26.13.20:3000/heligo';
+// URL base única del backend. Por defecto usa producción (Vercel); para
+// desarrollo local se puede sobrescribir con EXPO_PUBLIC_API_URL.
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ?? 'https://heli-go.vercel.app/heligo';
 // MODELOS
 
 export interface Tour {
