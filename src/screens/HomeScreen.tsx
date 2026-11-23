@@ -1,5 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getOperators, getTours, Operator, Tour } from '../services/api';
+import {
+  getLocationsByOperatorId,
+  getOperators,
+  getTours,
+  Operator,
+  Tour,
+} from '../services/api';
+import {
+  getDistanceKm,
+  useUserLocation,
+  type Coordinates,
+} from '../hooks/useUserLocation';
 import { ExperienceCard } from '../components/ExperienceCard';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,6 +25,7 @@ import {
   View,
   ScrollView,
   Image,
+  Linking,
 } from 'react-native';
 
 type HomeNavigationProp = NativeStackNavigationProp<
@@ -29,6 +41,14 @@ export function HomeScreen() {
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const {
+    status: locationStatus,
+    coords,
+    message: locationMessage,
+    requestLocation,
+  } = useUserLocation();
+  const [tourCoords, setTourCoords] =
+    useState<Map<number, Coordinates> | null>(null);
 
   const toggleFavorite = (tour: Tour) => {
     setFavoriteIds((current) =>
@@ -89,6 +109,75 @@ const openDestination = (destination: Destination) => {
       active = false;
     };
   }, []);
+  // Con la ubicación del usuario, obtiene las coordenadas reales de los puntos
+  // de operación de los tours. Todo se calcula localmente en el dispositivo.
+  useEffect(() => {
+    if (!coords || tours.length === 0) return;
+    let active = true;
+
+    const operatorIds = [...new Set(tours.map((tour) => tour.operatorId))];
+
+    Promise.allSettled(
+      operatorIds.map((operatorId) => getLocationsByOperatorId(operatorId))
+    ).then((results) => {
+      if (!active) return;
+
+      const byLocationId = new Map<number, Coordinates>();
+      results.forEach((result) => {
+        if (result.status !== 'fulfilled') return;
+        result.value.forEach((location) => {
+          const latitude = Number(location.latitude);
+          const longitude = Number(location.longitude);
+          if (
+            location.isActive &&
+            Number.isFinite(latitude) &&
+            Number.isFinite(longitude)
+          ) {
+            byLocationId.set(location.id, { latitude, longitude });
+          }
+        });
+      });
+      setTourCoords(byLocationId);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [coords, tours]);
+
+  const { nearbyTours, distances } = useMemo(() => {
+    const distanceByTour = new Map<number, number>();
+    if (!coords || !tourCoords) {
+      return { nearbyTours: tours, distances: distanceByTour };
+    }
+
+    tours.forEach((tour) => {
+      const location = tourCoords.get(tour.serviceLocationId);
+      if (location) {
+        distanceByTour.set(tour.id, getDistanceKm(coords, location));
+      }
+    });
+
+    // Los tours sin coordenadas quedan al final y sin distancia.
+    const sorted = [...tours].sort((a, b) => {
+      const da = distanceByTour.get(a.id);
+      const db = distanceByTour.get(b.id);
+      if (da === undefined && db === undefined) return 0;
+      if (da === undefined) return 1;
+      if (db === undefined) return -1;
+      return da - db;
+    });
+
+    return { nearbyTours: sorted, distances: distanceByTour };
+  }, [tours, coords, tourCoords]);
+
+  const hasProximity = distances.size > 0;
+  const missingCoordinates =
+    coords !== null &&
+    tourCoords !== null &&
+    tours.length > 0 &&
+    !hasProximity;
+
   const normalizeText = (value: string) =>
     value
       .normalize('NFD')
@@ -166,13 +255,34 @@ const openDestination = (destination: Destination) => {
         </View>
 
         {/* UBICACIÓN */}
-        <TouchableOpacity style={styles.locationButton}>
+        <TouchableOpacity
+          style={styles.locationButton}
+          onPress={
+            locationStatus === 'blocked'
+              ? () => Linking.openSettings()
+              : requestLocation
+          }
+          disabled={locationStatus === 'loading'}
+        >
           <Text style={styles.locationIcon}>●</Text>
 
           <Text style={styles.locationText}>
-            Usar mi ubicación
+            {locationStatus === 'loading'
+              ? 'Obteniendo tu ubicación...'
+              : locationStatus === 'blocked'
+              ? 'Abrir ajustes de ubicación'
+              : coords
+              ? 'Ubicación activa · Actualizar'
+              : 'Usar mi ubicación'}
           </Text>
-        </TouchableOpacity>      
+        </TouchableOpacity>
+
+        {(locationMessage || missingCoordinates) && (
+          <Text style={styles.locationMessage}>
+            {locationMessage ??
+              'Aún no hay coordenadas de las experiencias para calcular cuáles están cerca de ti.'}
+          </Text>
+        )}      
 {/* RESULTADOS DE BÚSQUEDA */}
 {isSearching ? (
   <View style={styles.experiencesSection}>
@@ -213,7 +323,7 @@ const openDestination = (destination: Destination) => {
 <View style={styles.experiencesSection}>
   <View style={styles.sectionHeader}>
     <Text style={styles.sectionTitle}>
-      Experiencias cerca de ti
+      {hasProximity ? 'Experiencias cerca de ti' : 'Experiencias disponibles'}
     </Text>
     <TouchableOpacity onPress={() => navigation.navigate('TourList')}>
       <Text style={styles.seeAll}>Ver todas</Text>
@@ -237,10 +347,11 @@ const openDestination = (destination: Destination) => {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.cardsContainer}
     >
-      {tours.map((tour) => (
+      {nearbyTours.map((tour) => (
         <ExperienceCard
   key={tour.id}
   tour={tour}
+  distanceKm={distances.get(tour.id)}
   onPress={openExperience}
   isFavorite={favoriteIds.includes(tour.id)}
   onToggleFavorite={toggleFavorite}
@@ -413,6 +524,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#C08C12',
+  },
+
+  locationMessage: {
+    fontSize: 12,
+    color: '#8A9AAF',
+    marginTop: 8,
+    paddingLeft: 4,
   },
 
   /* EXPERIENCES */
