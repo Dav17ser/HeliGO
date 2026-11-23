@@ -27,7 +27,13 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "HeliGO usa tu ubicación para mostrarte las experiencias en helicóptero más cercanas a ti."
+        }
+      ]
     ]
   }
 }

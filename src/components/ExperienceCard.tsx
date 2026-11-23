@@ -13,6 +13,7 @@ type ExperienceCardProps = {
   onPress?: (tour: Tour) => void;
   isFavorite?: boolean;
   onToggleFavorite?: (tour: Tour) => void;
+  distanceKm?: number;
 };
 
 export function ExperienceCard({
@@ -20,6 +21,7 @@ export function ExperienceCard({
   onPress,
   isFavorite = false,
   onToggleFavorite,
+  distanceKm,
 }: ExperienceCardProps) {
   const formattedPrice = new Intl.NumberFormat('es-CO', {
     style: 'currency',
@@ -67,6 +69,8 @@ export function ExperienceCard({
           </Text>
           <Text style={styles.location} numberOfLines={1}>
             📍 {tour.city}
+            {distanceKm !== undefined &&
+              ` · a ${distanceKm < 10 ? distanceKm.toFixed(1) : Math.round(distanceKm)} km`}
           </Text>
           <Text style={styles.duration}>
             ⏱ {tour.durationMinutes} min
