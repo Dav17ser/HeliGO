@@ -10,6 +10,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
 import { ExperienceDetailScreen } from '../screens/ExperienceDetailScreen';
 import { DestinationDetailScreen } from '../screens/DestinationDetailScreen';
+import { TourListScreen } from '../screens/TourListScreen';
 
 import { AppStackParamList } from '../types/navigation';
 
@@ -33,6 +34,8 @@ export function AppNavigator() {
           name="ExperienceDetail"
           component={ExperienceDetailScreen}
         />
+
+        <Stack.Screen name="TourList" component={TourListScreen} />
 
         <Stack.Screen name="Example" component={ExampleScreen} />
       </Stack.Navigator>

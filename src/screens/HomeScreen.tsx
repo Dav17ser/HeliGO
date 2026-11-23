@@ -215,7 +215,7 @@ const openDestination = (destination: Destination) => {
     <Text style={styles.sectionTitle}>
       Experiencias cerca de ti
     </Text>
-    <TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate('TourList')}>
       <Text style={styles.seeAll}>Ver todas</Text>
     </TouchableOpacity>
   </View>

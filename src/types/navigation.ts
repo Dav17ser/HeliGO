@@ -4,6 +4,7 @@ export type AppStackParamList = {
   Home: undefined;
   Example: undefined;
   Register: undefined;
+  TourList: undefined;
   ExperienceDetail: {
     tourId: number;
   };
