@@ -33,7 +33,8 @@
         {
           "locationWhenInUsePermission": "HeliGO usa tu ubicación para mostrarte las experiencias en helicóptero más cercanas a ti."
         }
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }
