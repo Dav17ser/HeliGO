@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { getTours, Tour } from '../services/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { getOperators, getTours, Operator, Tour } from '../services/api';
 import { ExperienceCard } from '../components/ExperienceCard';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -27,6 +27,8 @@ export function HomeScreen() {
   const [loadingTours, setLoadingTours] = useState(true);
   const [tourError, setTourError] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const toggleFavorite = (tour: Tour) => {
     setFavoriteIds((current) =>
@@ -70,15 +72,54 @@ const openDestination = (destination: Destination) => {
       }
     }
 
+    async function loadOperators() {
+      try {
+        const data = await getOperators();
+        if (active) setOperators(data);
+      } catch (error) {
+        // La búsqueda por operador es opcional: sin operadores sigue funcionando por nombre y ubicación.
+        console.error('Error cargando operadores:', error);
+      }
+    }
+
     loadTours();
+    loadOperators();
 
     return () => {
       active = false;
     };
   }, []);
+  const normalizeText = (value: string) =>
+    value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+  const normalizedQuery = normalizeText(searchQuery);
+  const isSearching = normalizedQuery.length > 0;
+
+  const searchResults = useMemo(() => {
+    if (!normalizedQuery) return [];
+
+    const operatorNames = new Map(
+      operators.map((operator) => [operator.id, operator.name])
+    );
+
+    return tours.filter((tour) =>
+      [
+        tour.name,
+        tour.city,
+        tour.country,
+        operatorNames.get(tour.operatorId) ?? '',
+      ].some((field) => normalizeText(field).includes(normalizedQuery))
+    );
+  }, [tours, operators, normalizedQuery]);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
@@ -107,7 +148,21 @@ const openDestination = (destination: Destination) => {
             style={styles.searchInput}
             placeholder="¿Dónde quieres volar?"
             placeholderTextColor="#94A3B8"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            returnKeyType="search"
+            autoCorrect={false}
           />
+
+          {searchQuery !== '' && (
+            <TouchableOpacity
+              onPress={() => setSearchQuery('')}
+              accessibilityRole="button"
+              accessibilityLabel="Borrar búsqueda"
+            >
+              <Text style={styles.searchIcon}>×</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* UBICACIÓN */}
@@ -118,6 +173,42 @@ const openDestination = (destination: Destination) => {
             Usar mi ubicación
           </Text>
         </TouchableOpacity>      
+{/* RESULTADOS DE BÚSQUEDA */}
+{isSearching ? (
+  <View style={styles.experiencesSection}>
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>
+        Resultados de búsqueda
+      </Text>
+    </View>
+    {loadingTours ? (
+      <Text style={styles.cardDistance}>
+        Buscando experiencias...
+      </Text>
+    ) : tourError ? (
+      <Text style={styles.cardDistance}>
+        {tourError}
+      </Text>
+    ) : searchResults.length === 0 ? (
+      <Text style={styles.cardDistance}>
+        No encontramos experiencias para "{searchQuery.trim()}". Prueba con otro tour, ciudad u operador.
+      </Text>
+    ) : (
+      <View style={styles.resultsGrid}>
+        {searchResults.map((tour) => (
+          <ExperienceCard
+            key={tour.id}
+            tour={tour}
+            onPress={openExperience}
+            isFavorite={favoriteIds.includes(tour.id)}
+            onToggleFavorite={toggleFavorite}
+          />
+        ))}
+      </View>
+    )}
+  </View>
+) : (
+<>
  {/* EXPERIENCIAS CERCA DE TI */}
 <View style={styles.experiencesSection}>
   <View style={styles.sectionHeader}>
@@ -223,6 +314,8 @@ const openDestination = (destination: Destination) => {
   ))}
 </ScrollView>
         </View>
+</>
+)}
       </ScrollView>
     </SafeAreaView>
   );
@@ -345,6 +438,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#245B9B',
+  },
+
+  resultsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
   },
 
   cardsContainer: {
