@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { loginUser, requestPasswordReset } from '../services/auth';
+import { useAuth } from '../context/AuthContext';
 import {
   StyleSheet,
   Text,
@@ -14,6 +15,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 
 export function LoginScreen({ navigation }: any) {
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -81,7 +83,8 @@ const handleLogin = async () => {
       return;
     }
 
-    navigation.navigate('Home', {
+    // Guarda la sesión; el navegador pasa a Home automáticamente.
+    await signIn({
       user: result.user,
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,

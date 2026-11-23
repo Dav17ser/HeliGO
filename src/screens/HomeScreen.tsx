@@ -6,6 +6,7 @@ import {
   Operator,
   Tour,
 } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import {
   getDistanceKm,
   useUserLocation,
@@ -47,6 +48,17 @@ export function HomeScreen() {
     message: locationMessage,
     requestLocation,
   } = useUserLocation();
+  const { session } = useAuth();
+  const fullName = session?.user.fullName.trim() ?? '';
+  const firstName = fullName.split(/\s+/)[0] ?? '';
+  const initials =
+    fullName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0].toUpperCase())
+      .join('') ||
+    (session?.user.email[0] ?? '').toUpperCase();
   const [tourCoords, setTourCoords] =
     useState<Map<number, Coordinates> | null>(null);
 
@@ -216,7 +228,7 @@ const openDestination = (destination: Destination) => {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>
-              Hola, Carlos 👋
+              {firstName ? `Hola, ${firstName} 👋` : 'Hola 👋'}
             </Text>
 
             <Text style={styles.subtitle}>
@@ -225,7 +237,7 @@ const openDestination = (destination: Destination) => {
           </View>
 
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>CR</Text>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
         </View>
 
