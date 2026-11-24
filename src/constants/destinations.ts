@@ -19,6 +19,12 @@ export const DESTINATIONS: Destination[] = [
     image: require('../../assets/home/cartagena.jpeg'),
   },
   {
+    id: 'guatape',
+    city: 'Guatapé',
+    country: 'Colombia',
+    image: require('../../assets/home/guatape.jpeg'),
+  },
+  {
     id: 'bogota',
     city: 'Bogotá',
     country: 'Colombia',

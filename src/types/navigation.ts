@@ -5,6 +5,7 @@ export type AppStackParamList = {
   Example: undefined;
   Register: undefined;
   TourList: undefined;
+  OperatorsMap: undefined;
   ExperienceDetail: {
     tourId: number;
   };

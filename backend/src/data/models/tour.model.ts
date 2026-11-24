@@ -1,12 +1,13 @@
 export interface Tour {
   id: number;
   operatorId: number;
-  serviceLocationId: number;
+  // NULL = información pendiente de confirmación (migración 007).
+  serviceLocationId: number | null;
   name: string;
   description: string | null;
-  price: string;
+  price: string | null;
   currency: string;
-  durationMinutes: number;
+  durationMinutes: number | null;
   imageUrl: string | null;
   operatorLogoUrl: string | null;
   city: string;

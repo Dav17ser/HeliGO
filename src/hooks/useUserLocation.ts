@@ -43,6 +43,10 @@ export function getDistanceKm(from: Coordinates, to: Coordinates): number {
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+export function formatDistanceKm(distanceKm: number): string {
+  return `${distanceKm < 10 ? distanceKm.toFixed(1) : Math.round(distanceKm)} km`;
+}
+
 // Ubicación del usuario en primer plano. Solo pide el permiso cuando se llama
 // a requestLocation; si ya fue concedido antes, la obtiene sin mostrar diálogos.
 export function useUserLocation() {
