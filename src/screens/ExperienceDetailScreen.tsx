@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,7 +13,7 @@ import {
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../types/navigation';
-import { getTourById, Tour } from '../services/api';
+import { getOperatorById, getTourById, Tour } from '../services/api';
 
 type DetailRoute = RouteProp<AppStackParamList, 'ExperienceDetail'>;
 
@@ -23,6 +25,7 @@ export function ExperienceDetailScreen() {
   const [tour, setTour] = useState<Tour | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [contacting, setContacting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -43,6 +46,42 @@ export function ExperienceDetailScreen() {
       active = false;
     };
   }, [route.params.tourId]);
+
+  // Contacta al operador real del tour por correo o teléfono.
+  // HeliGO aún no gestiona reservas: la consulta la atiende el operador.
+  const contactOperator = async (selected: Tour) => {
+    if (contacting) return;
+    setContacting(true);
+
+    try {
+      const operator = await getOperatorById(selected.operatorId);
+      const subject = encodeURIComponent(
+        `Consulta de disponibilidad: ${selected.name}`
+      );
+      const url = operator.contactEmail
+        ? `mailto:${operator.contactEmail}?subject=${subject}`
+        : operator.contactPhone
+        ? `tel:${operator.contactPhone.replace(/\s+/g, '')}`
+        : null;
+
+      if (!url) {
+        Alert.alert(
+          'Contacto no disponible',
+          'Este operador aún no tiene datos de contacto registrados.'
+        );
+        return;
+      }
+
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert(
+        'No fue posible abrir el contacto',
+        'Intenta nuevamente en unos minutos.'
+      );
+    } finally {
+      setContacting(false);
+    }
+  };
 
   const price = tour
     ? new Intl.NumberFormat('es-CO', {
@@ -111,8 +150,14 @@ export function ExperienceDetailScreen() {
           {tour.description || 'Próximamente encontrarás más información sobre esta experiencia.'}
         </Text>
 
-        <TouchableOpacity style={styles.contactButton}>
-          <Text style={styles.contactText}>Consultar disponibilidad</Text>
+        <TouchableOpacity
+          style={[styles.contactButton, contacting && { opacity: 0.7 }]}
+          onPress={() => contactOperator(tour)}
+          disabled={contacting}
+        >
+          <Text style={styles.contactText}>
+            {contacting ? 'Abriendo contacto...' : 'Consultar disponibilidad'}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
