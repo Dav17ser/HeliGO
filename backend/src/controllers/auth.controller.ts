@@ -39,6 +39,8 @@ export class AuthController {
           NOMBRE_INVALIDO: "El nombre debe tener al menos 2 caracteres",
           DATOS_INVALIDOS: "Verifica el nombre y el formato del correo",
           CONTRASENA_CORTA: "La contraseña debe tener al menos 8 caracteres",
+          REGISTRO_RECHAZADO:
+            "No fue posible crear la cuenta. Verifica tus datos o intenta con otro correo.",
           CONFIRMACION_EMAIL_REQUERIDA:
             "Cuenta creada. Revisa tu correo para confirmar el registro",
         };

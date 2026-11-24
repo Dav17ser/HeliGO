@@ -29,7 +29,14 @@ export class AuthRepository {
     });
 
     if (error) {
-      throw new Error(error.message);
+      // Rechazos de Supabase (correo en uso, contraseña débil, límite de
+      // intentos) son errores del cliente; fallos de red siguen como 500.
+      const isClientError =
+        typeof error.status === "number" &&
+        error.status >= 400 &&
+        error.status < 500;
+
+      throw new Error(isClientError ? "REGISTRO_RECHAZADO" : error.message);
     }
 
     if (!data.user || !data.session) {
