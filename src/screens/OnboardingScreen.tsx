@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -38,17 +38,6 @@ export function OnboardingScreen({ navigation }: any) {
   const [currentPage, setCurrentPage] = useState(0);
 
   const currentData = onboardingData[currentPage];
-
-  // Precargar las imágenes del onboarding
-  useEffect(() => {
-    onboardingData.forEach((item) => {
-      const imageSource = Image.resolveAssetSource(item.image);
-
-if (imageSource?.uri) {
-  Image.prefetch(imageSource.uri);
-}
-    });
-  }, []);
 
   const handleNext = () => {
   if (currentPage < onboardingData.length - 1) {
