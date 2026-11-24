@@ -13,7 +13,13 @@ import {
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../types/navigation';
-import { getOperatorById, getTourById, Tour } from '../services/api';
+import {
+  formatTourDuration,
+  formatTourPrice,
+  getOperatorById,
+  getTourById,
+  Tour,
+} from '../services/api';
 
 type DetailRoute = RouteProp<AppStackParamList, 'ExperienceDetail'>;
 
@@ -83,13 +89,7 @@ export function ExperienceDetailScreen() {
     }
   };
 
-  const price = tour
-    ? new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: tour.currency || 'COP',
-        maximumFractionDigits: 0,
-      }).format(Number(tour.price))
-    : '';
+  const price = tour ? formatTourPrice(tour) : '';
 
   if (loading) {
     return (
@@ -139,7 +139,7 @@ export function ExperienceDetailScreen() {
         <Text style={styles.price}>{price}</Text>
 
         <View style={styles.infoRow}>
-          <Text style={styles.info}>⏱ {tour.durationMinutes} minutos</Text>
+          <Text style={styles.info}>⏱ {formatTourDuration(tour)}</Text>
           <Text style={styles.info}>🚁 Experiencia aérea</Text>
         </View>
 

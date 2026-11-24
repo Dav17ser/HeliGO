@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Tour } from '../services/api';
+import { formatTourDuration, formatTourPrice, Tour } from '../services/api';
+import { formatDistanceKm } from '../hooks/useUserLocation';
 
 type ExperienceCardProps = {
   tour: Tour;
@@ -23,11 +24,7 @@ export function ExperienceCard({
   onToggleFavorite,
   distanceKm,
 }: ExperienceCardProps) {
-  const formattedPrice = new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: tour.currency || 'COP',
-    maximumFractionDigits: 0,
-  }).format(Number(tour.price));
+  const formattedPrice = formatTourPrice(tour);
 
   return (
     <View style={styles.card}>
@@ -70,10 +67,10 @@ export function ExperienceCard({
           <Text style={styles.location} numberOfLines={1}>
             📍 {tour.city}
             {distanceKm !== undefined &&
-              ` · a ${distanceKm < 10 ? distanceKm.toFixed(1) : Math.round(distanceKm)} km`}
+              ` · a ${formatDistanceKm(distanceKm)}`}
           </Text>
           <Text style={styles.duration}>
-            ⏱ {tour.durationMinutes} min
+            ⏱ {formatTourDuration(tour)}
           </Text>
         </View>
       </TouchableOpacity>

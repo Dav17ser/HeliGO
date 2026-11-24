@@ -12,6 +12,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { AppStackParamList } from '../types/navigation';
 import {
+  formatTourDuration,
+  formatTourPrice,
   getOperators,
   getTours,
   getLocationsByOperatorId,
@@ -20,6 +22,7 @@ import {
   ServiceLocation,
 } from '../services/api';
 import { DESTINATIONS } from '../constants/destinations';
+import { getOperatorImage } from '../constants/operators';
 
 type Props = NativeStackScreenProps<
   AppStackParamList,
@@ -146,6 +149,15 @@ export function DestinationDetailScreen({ route, navigation }: Props) {
             ) : (
               operators.map((operator) => (
                 <View key={operator.id} style={styles.infoCard}>
+                  {getOperatorImage(operator) && (
+                    <Image
+                      source={getOperatorImage(operator)!}
+                      style={styles.operatorImage}
+                      resizeMode="cover"
+                      accessibilityLabel={`Imagen de ${operator.name}`}
+                    />
+                  )}
+
                   <Text style={styles.cardTitle}>
                     {operator.name}
                   </Text>
@@ -202,11 +214,11 @@ export function DestinationDetailScreen({ route, navigation }: Props) {
                   )}
 
                   <Text style={styles.cardDetail}>
-                    Duración: {tour.durationMinutes} minutos
+                    Duración: {formatTourDuration(tour)}
                   </Text>
 
                   <Text style={styles.price}>
-                    {tour.currency} {tour.price}
+                    {formatTourPrice(tour)}
                   </Text>
 
                   <Text style={styles.linkText}>
@@ -305,6 +317,13 @@ const styles = StyleSheet.create({
     color: '#102A43',
     marginTop: 15,
     marginBottom: 12,
+  },
+  operatorImage: {
+    width: '100%',
+    height: 140,
+    borderRadius: 10,
+    marginBottom: 12,
+    backgroundColor: '#EAF0F6',
   },
   infoCard: {
     backgroundColor: '#F7F9FC',

@@ -7,16 +7,37 @@ export const API_BASE_URL =
 export interface Tour {
   id: number;
   operatorId: number;
-  serviceLocationId: number;
+  // null = pendiente de confirmación: sin ubicación validada, sin precio o
+  // sin duración publicada. Nunca se reemplaza por un valor inventado.
+  serviceLocationId: number | null;
   name: string;
   description: string | null;
-  price: string;
+  price: string | null;
   currency: string;
-  durationMinutes: number;
+  durationMinutes: number | null;
   imageUrl: string | null;
   operatorLogoUrl: string | null;
   city: string;
   country: string;
+}
+
+// Formato único de precio y duración para todas las pantallas.
+export function formatTourPrice(tour: Tour): string {
+  const amount = tour.price === null ? NaN : Number(tour.price);
+
+  if (!Number.isFinite(amount)) return 'Precio por confirmar';
+
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: tour.currency || 'COP',
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+export function formatTourDuration(tour: Tour): string {
+  return tour.durationMinutes
+    ? `${tour.durationMinutes} min`
+    : 'Duración por confirmar';
 }
 
 export interface Operator {

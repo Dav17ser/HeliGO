@@ -176,7 +176,11 @@ const openDestination = (destination: Destination) => {
     }
 
     tours.forEach((tour) => {
-      const location = tourCoords.get(tour.serviceLocationId);
+      // Sin ubicación validada no hay distancia: el tour queda al final.
+      const location =
+        tour.serviceLocationId === null
+          ? undefined
+          : tourCoords.get(tour.serviceLocationId);
       if (location) {
         distanceByTour.set(tour.id, getDistanceKm(coords, location));
       }
@@ -304,6 +308,15 @@ const openDestination = (destination: Destination) => {
               ? 'Ubicación activa · Actualizar'
               : 'Usar mi ubicación'}
           </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.locationButton}
+          onPress={() => navigation.navigate('OperatorsMap')}
+          accessibilityRole="button"
+        >
+          <Text style={styles.locationIcon}>◆</Text>
+          <Text style={styles.locationText}>Ver mapa de operadores</Text>
         </TouchableOpacity>
 
         {(locationMessage || missingCoordinates) && (

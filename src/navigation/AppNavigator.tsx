@@ -12,6 +12,7 @@ import { RegisterScreen } from '../screens/RegisterScreen';
 import { ExperienceDetailScreen } from '../screens/ExperienceDetailScreen';
 import { DestinationDetailScreen } from '../screens/DestinationDetailScreen';
 import { TourListScreen } from '../screens/TourListScreen';
+import { OperatorsMapScreen } from '../screens/OperatorsMapScreen';
 
 import { AppStackParamList } from '../types/navigation';
 import { useAuth } from '../context/AuthContext';
@@ -48,6 +49,11 @@ export function AppNavigator() {
             />
 
             <Stack.Screen name="TourList" component={TourListScreen} />
+
+            <Stack.Screen
+              name="OperatorsMap"
+              component={OperatorsMapScreen}
+            />
 
             <Stack.Screen name="Example" component={ExampleScreen} />
           </>
