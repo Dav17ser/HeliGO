@@ -2,6 +2,7 @@ import operatorRouter from "./routes/operator.route";
 import locationRouter from "./routes/location.route";
 import tourRouter from "./routes/tour.route";
 import authRouter from "./routes/auth.route";
+import cors from "cors";
 
 import express from "express";
 import { scopePerRequest } from "awilix-express";
@@ -9,6 +10,16 @@ import { container } from "./config/container";
 
 export const createServer = () => {
   const app = express();
+  app.use(
+  cors({
+    origin: [
+      "https://heligo.onrender.com",
+      "https://heligo-sooty.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
   app.use(express.json());
 
