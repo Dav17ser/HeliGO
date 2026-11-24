@@ -27,6 +27,7 @@ import {
   ScrollView,
   Image,
   Linking,
+  Alert,
 } from 'react-native';
 
 type HomeNavigationProp = NativeStackNavigationProp<
@@ -48,7 +49,18 @@ export function HomeScreen() {
     message: locationMessage,
     requestLocation,
   } = useUserLocation();
-  const { session } = useAuth();
+  const { session, signOut } = useAuth();
+
+  const confirmSignOut = () => {
+    Alert.alert(
+      session?.user.email ?? 'Tu cuenta',
+      '¿Quieres cerrar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cerrar sesión', style: 'destructive', onPress: signOut },
+      ]
+    );
+  };
   const fullName = session?.user.fullName.trim() ?? '';
   const firstName = fullName.split(/\s+/)[0] ?? '';
   const initials =
@@ -236,9 +248,14 @@ const openDestination = (destination: Destination) => {
             </Text>
           </View>
 
-          <View style={styles.avatar}>
+          <TouchableOpacity
+            style={styles.avatar}
+            onPress={confirmSignOut}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar sesión"
+          >
             <Text style={styles.avatarText}>{initials}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* BUSCADOR */}
